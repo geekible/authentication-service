@@ -1,5 +1,5 @@
 ## Authentication Server
-#Configuration
+Configuration
 You will need to create a config.yaml file in the root of the application folder as below
 
 auth_service:     
