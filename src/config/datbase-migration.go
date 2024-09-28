@@ -25,5 +25,16 @@ func (m *DatabaseMigration) DoMigration() error {
 		return err
 	}
 
+	m.db.FirstOrCreate(&domain.Claim{
+		Claim: "Administrator",
+	}, 1)
+	m.db.FirstOrCreate(&domain.Claim{
+		Claim: "User",
+	}, 2)
+
+	if err := m.db.AutoMigrate(&domain.UserClaim{}); err != nil {
+		return err
+	}
+
 	return nil
 }

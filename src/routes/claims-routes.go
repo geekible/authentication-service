@@ -24,7 +24,7 @@ const (
 	claimErrSrc = "ClaimRoutes"
 )
 
-func InitClaimRoutes(serviceCfg config.ServiceConfig) *ClaimsRoutes {
+func InitClaimRoutes(serviceCfg *config.ServiceConfig) *ClaimsRoutes {
 	return &ClaimsRoutes{
 		baseEndpoint: "/claims",
 		mux:          serviceCfg.Mux,

@@ -24,7 +24,7 @@ func InitAuthenticationService(serviceConfig *config.ServiceConfig) *Authenticat
 	return &AuthenticationService{
 		clientId:     serviceConfig.ClientId,
 		tokenAuth:    jwtauth.New("HS256", []byte(serviceConfig.ClientSecret), nil),
-		userRepo:     repositories.InitUserRepositoy(serviceConfig.Db, serviceConfig.Logger),
+		userRepo:     repositories.InitUserRepositoy(serviceConfig),
 		cryptoHelper: helpers.InitCryptoHelper(),
 		logger:       serviceConfig.Logger,
 	}

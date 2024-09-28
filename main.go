@@ -18,7 +18,8 @@ func main() {
 
 	// register routes
 	routes.InitAuthenticationRoutes(serviceCfg).Register()
-	routes.InitClaimRoutes(*serviceCfg).Register()
+	routes.InitClaimRoutes(serviceCfg).Register()
+	routes.InitUserRoutes(serviceCfg).Register()
 
 	log.Printf("starting service on port: %d\n", serviceCfg.Port)
 

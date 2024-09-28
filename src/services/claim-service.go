@@ -13,7 +13,7 @@ type ClaimService struct {
 	logger    *zap.SugaredLogger
 }
 
-func InitClaimService(serviceCfg config.ServiceConfig) *ClaimService {
+func InitClaimService(serviceCfg *config.ServiceConfig) *ClaimService {
 	return &ClaimService{
 		claimRepo: repositories.InitClaimRepository(serviceCfg),
 		logger:    serviceCfg.Logger,
