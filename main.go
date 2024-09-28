@@ -18,8 +18,9 @@ func main() {
 
 	// register routes
 	routes.InitAuthenticationRoutes(serviceCfg).Register()
+	routes.InitClaimRoutes(*serviceCfg).Register()
 
-	println("starting service on port: %d", serviceCfg.Port)
+	log.Printf("starting service on port: %d\n", serviceCfg.Port)
 
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", serviceCfg.Port), serviceCfg.Mux); err != nil {
 		log.Fatalf("error starting http server: %v", err)

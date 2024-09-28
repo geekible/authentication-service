@@ -20,5 +20,10 @@ func (m *DatabaseMigration) DoMigration() error {
 	if err := m.db.AutoMigrate(&domain.User{}); err != nil {
 		return err
 	}
+
+	if err := m.db.AutoMigrate(&domain.Claim{}); err != nil {
+		return err
+	}
+
 	return nil
 }
