@@ -8,7 +8,7 @@ import (
 )
 
 func initServiceMux() *chi.Mux {
-	requestLogger := httplog.NewLogger("todo-service", httplog.Options{
+	requestLogger := httplog.NewLogger("authentication-service", httplog.Options{
 		JSON:     true,
 		Concise:  true,
 		LogLevel: "debug",

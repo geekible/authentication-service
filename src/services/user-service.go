@@ -8,8 +8,10 @@ import (
 	"authservice/src/repositories"
 	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/go-chi/jwtauth/v5"
 	"go.uber.org/zap"
 )
@@ -20,6 +22,7 @@ type UserService struct {
 	emailService  *EmailService
 	tokenAuth     *jwtauth.JWTAuth
 	logger        *zap.SugaredLogger
+	clientSecret  string
 }
 
 func InitUserService(serviceCfg *config.ServiceConfig) *UserService {
@@ -29,6 +32,7 @@ func InitUserService(serviceCfg *config.ServiceConfig) *UserService {
 		emailService:  InitEmailService(),
 		tokenAuth:     jwtauth.New("HS256", []byte(serviceCfg.ClientSecret), nil),
 		logger:        serviceCfg.Logger,
+		clientSecret:  serviceCfg.ClientSecret,
 	}
 }
 
@@ -145,9 +149,17 @@ func (s *UserService) GetByUsernameAndPassword(username, password string) (dtos.
 }
 
 func (s *UserService) GenerateUserToken(loginResponse dtos.UserLoginResponseDto) (string, error) {
-	loginResponse.Exp = time.Now().Add(8 * time.Hour)
+	permissions := []string{}
+	for _, claim := range loginResponse.UserClaims {
+		permissions = append(permissions, claim)
+	}
+
 	_, tokenString, err := s.tokenAuth.Encode(map[string]interface{}{
-		"profile": loginResponse,
+		"username":      loginResponse.Username,
+		"email_address": loginResponse.EmailAddress,
+		"exp":           time.Now().Add(1 * time.Hour),
+		"issueed_at":    time.Now(),
+		"permissions":   permissions,
 	})
 
 	if err != nil {
@@ -155,4 +167,50 @@ func (s *UserService) GenerateUserToken(loginResponse dtos.UserLoginResponseDto)
 	}
 
 	return tokenString, nil
+}
+
+func (s *UserService) CustomJWTAuthVerifier(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		tokenString := r.Header.Get("access_token")
+
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			return []byte(s.clientSecret), nil
+		})
+		if err != nil {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		expChecked := false
+
+		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+			for key, value := range claims {
+				//chaeck exp time
+				if key == "exp" {
+					expChecked = true
+					exp := value.(float64)
+					now := time.Now().Unix()
+
+					if int64(exp) < now {
+						http.Error(w, "Unauthorized", http.StatusUnauthorized)
+						return
+					}
+				}
+			}
+		}
+
+		if !expChecked {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		if token.Valid {
+			next.ServeHTTP(w, r)
+		} else {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }

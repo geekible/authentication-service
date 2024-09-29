@@ -38,13 +38,16 @@ func InitUserRoutes(serviceCfg *config.ServiceConfig) *UserRoutes {
 
 func (a *UserRoutes) Register() {
 	a.mux.Post(a.baseEndpoint, a.addUser)
+	a.mux.Post(fmt.Sprintf("%s/login", a.baseEndpoint), a.login)
 
 	// protected routes
-	a.mux.Post(fmt.Sprintf("%s/add-admin-user", a.baseEndpoint), a.addAdminUser)
-	a.mux.Put(fmt.Sprintf("%s/update-password", a.baseEndpoint), a.updateUserPassword)
-	a.mux.Delete(a.baseEndpoint, a.deleteUser)
+	a.mux.Group(func(r chi.Router) {
+		r.Use(a.userService.CustomJWTAuthVerifier)
 
-	a.mux.Post(fmt.Sprintf("%s/login", a.baseEndpoint), a.login)
+		r.Post(fmt.Sprintf("%s/add-admin-user", a.baseEndpoint), a.addAdminUser)
+		r.Put(fmt.Sprintf("%s/update-password", a.baseEndpoint), a.updateUserPassword)
+		r.Delete(a.baseEndpoint, a.deleteUser)
+	})
 }
 
 func (a *UserRoutes) addUser(w http.ResponseWriter, r *http.Request) {
