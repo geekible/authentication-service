@@ -8,7 +8,9 @@ import (
 	"authservice/src/repositories"
 	"errors"
 	"fmt"
+	"time"
 
+	"github.com/go-chi/jwtauth/v5"
 	"go.uber.org/zap"
 )
 
@@ -16,6 +18,7 @@ type UserService struct {
 	userRepo      *repositories.UserRepository
 	userClaimRepo *repositories.UserClaimRepository
 	emailService  *EmailService
+	tokenAuth     *jwtauth.JWTAuth
 	logger        *zap.SugaredLogger
 }
 
@@ -24,6 +27,7 @@ func InitUserService(serviceCfg *config.ServiceConfig) *UserService {
 		userRepo:      repositories.InitUserRepositoy(serviceCfg),
 		userClaimRepo: repositories.InitUserClaimRepository(serviceCfg),
 		emailService:  InitEmailService(),
+		tokenAuth:     jwtauth.New("HS256", []byte(serviceCfg.ClientSecret), nil),
 		logger:        serviceCfg.Logger,
 	}
 }
@@ -138,4 +142,17 @@ func (s *UserService) GetByUsernameAndPassword(username, password string) (dtos.
 	resp.UserClaims = claims
 
 	return resp, nil
+}
+
+func (s *UserService) GenerateUserToken(loginResponse dtos.UserLoginResponseDto) (string, error) {
+	loginResponse.Exp = time.Now().Add(8 * time.Hour)
+	_, tokenString, err := s.tokenAuth.Encode(map[string]interface{}{
+		"profile": loginResponse,
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	return tokenString, nil
 }

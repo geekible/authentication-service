@@ -122,5 +122,11 @@ func (a *UserRoutes) login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	a.jsonHelpers.WriteJSON(w, http.StatusOK, user, nil)
+	token, err := a.userService.GenerateUserToken(user)
+	if err != nil {
+		a.jsonHelpers.ErrorJSON(w, errors.New("invalid login attempt"), http.StatusUnauthorized, userErrSrc)
+		return
+	}
+
+	a.jsonHelpers.WriteJSON(w, http.StatusOK, token, nil)
 }
