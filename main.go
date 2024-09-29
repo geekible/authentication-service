@@ -17,7 +17,6 @@ func main() {
 	}
 
 	// register routes
-	routes.InitAuthenticationRoutes(serviceCfg).Register()
 	routes.InitClaimRoutes(serviceCfg).Register()
 	routes.InitUserRoutes(serviceCfg).Register()
 

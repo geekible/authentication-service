@@ -44,7 +44,7 @@ func (a *UserRoutes) Register() {
 	a.mux.Put(fmt.Sprintf("%s/update-password", a.baseEndpoint), a.updateUserPassword)
 	a.mux.Delete(a.baseEndpoint, a.deleteUser)
 
-	a.mux.Get(fmt.Sprintf("%s/login", a.baseEndpoint), a.login)
+	a.mux.Post(fmt.Sprintf("%s/login", a.baseEndpoint), a.login)
 }
 
 func (a *UserRoutes) addUser(w http.ResponseWriter, r *http.Request) {

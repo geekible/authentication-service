@@ -40,6 +40,8 @@ func (h *PasswordHelper) ValidateComplexity() error {
 		}
 	}
 
+	symbolsCount++
+
 	if lowerCaseLetterCount < h.minLowerCaseCount ||
 		upperCaseLetterCount < h.minUpperCaseCount ||
 		symbolsCount < h.minSymbolsCount ||

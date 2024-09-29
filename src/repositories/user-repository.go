@@ -54,9 +54,9 @@ func (r *UserRepository) Delete(user domain.User) error {
 	return nil
 }
 
-func (r *UserRepository) GetByUsernameAndPassword(username, password string) (domain.User, error) {
+func (r *UserRepository) GetByUsername(username string) (domain.User, error) {
 	var user domain.User
-	if err := r.db.First(&user, "username = ? and password = ?").Error; err != nil {
+	if err := r.db.First(&user, "username = ?", username).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			r.logger.Warnf("username %s not found as an active user", username)
 		} else {

@@ -24,6 +24,7 @@ func InitUserService(serviceCfg *config.ServiceConfig) *UserService {
 		userRepo:      repositories.InitUserRepositoy(serviceCfg),
 		userClaimRepo: repositories.InitUserClaimRepository(serviceCfg),
 		emailService:  InitEmailService(),
+		logger:        serviceCfg.Logger,
 	}
 }
 
@@ -32,7 +33,7 @@ func (s *UserService) validateUser(user domain.User) error {
 		return errors.New("username must be supplied")
 	}
 
-	if s.emailService.ValidateEmail(user.EmailAddress) {
+	if !s.emailService.ValidateEmail(user.EmailAddress) {
 		return fmt.Errorf("the email address %s is not in a valid format", user.EmailAddress)
 	}
 
@@ -59,6 +60,21 @@ func (s *UserService) AddUser(user domain.User, isAdminUser bool) (domain.User, 
 	user, err = s.userRepo.Add(user)
 	if err != nil {
 		s.logger.Errorf("error adding user %s with error %v", user.Username, err)
+		return user, err
+	}
+
+	userClaim := domain.UserClaim{
+		UserId: user.ID,
+	}
+
+	if isAdminUser {
+		userClaim.ClaimId = 1
+	} else {
+		userClaim.ClaimId = 2
+	}
+
+	if err := s.userClaimRepo.Add(userClaim); err != nil {
+		s.logger.Errorf("error adding user claim for user %s with error %v", user.Username, err)
 		return user, err
 	}
 
@@ -99,10 +115,13 @@ func (s *UserService) GetByUsernameAndPassword(username, password string) (dtos.
 		return dtos.UserLoginResponseDto{}, errors.New(loginErrMsg)
 	}
 
-	hashPwd, _ := helpers.InitCryptoHelper().Encrypt(password)
-
-	user, err := s.userRepo.GetByUsernameAndPassword(username, hashPwd)
+	user, err := s.userRepo.GetByUsername(username)
 	if err != nil {
+		s.logger.Warnf("invalid login attempt for user %s", username)
+		return dtos.UserLoginResponseDto{}, errors.New(loginErrMsg)
+	}
+
+	if !helpers.InitCryptoHelper().IsHashMatched(user.Password, password) {
 		s.logger.Warnf("invalid login attempt for user %s", username)
 		return dtos.UserLoginResponseDto{}, errors.New(loginErrMsg)
 	}
