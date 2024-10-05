@@ -116,6 +116,10 @@ func (s *UserService) DeleteUser(user domain.User) error {
 	return nil
 }
 
+func (s *UserService) GetByUsername(username string) (domain.User, error) {
+	return s.userRepo.GetByUsername(username)
+}
+
 func (s *UserService) GetByUsernameAndPassword(username, password string) (dtos.UserLoginResponseDto, error) {
 	loginErrMsg := "username or password does not match"
 	if len(username) <= 0 || len(password) <= 0 {
@@ -206,11 +210,10 @@ func (s *UserService) CustomJWTAuthVerifier(next http.Handler) http.Handler {
 
 		if token.Valid {
 			next.ServeHTTP(w, r)
+			return
 		} else {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
-
-		next.ServeHTTP(w, r)
 	})
 }
