@@ -33,12 +33,29 @@ func (r *UserRepository) Add(user domain.User) (domain.User, error) {
 
 func (r *UserRepository) UpdateUserPassword(updatePasswordDto dtos.UserUpdatePasswordDto) error {
 	err := r.db.Model(&domain.User{}).
-		Where("user_id = ?", updatePasswordDto.UserId).
+		Where("id = ?", updatePasswordDto.UserId).
 		Update("password", updatePasswordDto.NewPassword).
 		Error
 
 	if err != nil {
 		r.logger.Errorf("error updating userpassword with error: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+func (r *UserRepository) UpdateUser(user domain.User) error {
+	err := r.db.Model(&domain.User{}).
+		Where("id = ?", user.ID).
+		Update("username", user.Username).
+		Update("email_address", user.EmailAddress).
+		Update("first_name", user.FirstName).
+		Update("surname", user.Surname).
+		Error
+
+	if err != nil {
+		r.logger.Errorf("error updating user with error: %v", err)
 		return err
 	}
 

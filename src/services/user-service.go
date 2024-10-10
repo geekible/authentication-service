@@ -89,6 +89,24 @@ func (s *UserService) AddUser(user domain.User, isAdminUser bool) (domain.User, 
 	return user, nil
 }
 
+func (s *UserService) UpdateUserDetails(user dtos.UserDto) error {
+	usr, err := s.userRepo.GetById(user.UserId)
+	if err != nil {
+		return errors.New("details do not match")
+	}
+
+	usr.FirstName = user.FirstName
+	usr.Surname = user.Surname
+	usr.EmailAddress = user.EmailAddress
+	usr.Username = user.Username
+
+	if err := s.userRepo.UpdateUser(usr); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s *UserService) UpdateUserPassword(updateUserPassword dtos.UserUpdatePasswordDto) error {
 	user, err := s.userRepo.GetById(updateUserPassword.UserId)
 	if err != nil {
@@ -116,8 +134,20 @@ func (s *UserService) DeleteUser(user domain.User) error {
 	return nil
 }
 
-func (s *UserService) GetByUsername(username string) (domain.User, error) {
-	return s.userRepo.GetByUsername(username)
+func (s *UserService) GetByUsername(username string) (dtos.UserDto, error) {
+	user, err := s.userRepo.GetByUsername(username)
+	if err != nil {
+		s.logger.Warnf("invalid user %s", username)
+		return dtos.UserDto{}, errors.New("user not found")
+	}
+
+	return dtos.UserDto{
+		UserId:       user.ID,
+		Username:     user.Username,
+		EmailAddress: user.EmailAddress,
+		FirstName:    user.FirstName,
+		Surname:      user.Surname,
+	}, nil
 }
 
 func (s *UserService) GetByUsernameAndPassword(username, password string) (dtos.UserLoginResponseDto, error) {
@@ -154,9 +184,7 @@ func (s *UserService) GetByUsernameAndPassword(username, password string) (dtos.
 
 func (s *UserService) GenerateUserToken(loginResponse dtos.UserLoginResponseDto) (string, error) {
 	permissions := []string{}
-	for _, claim := range loginResponse.UserClaims {
-		permissions = append(permissions, claim)
-	}
+	permissions = append(permissions, loginResponse.UserClaims...)
 
 	_, tokenString, err := s.tokenAuth.Encode(map[string]interface{}{
 		"username":      loginResponse.Username,

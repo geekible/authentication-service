@@ -7,4 +7,6 @@ type User struct {
 	Username     string `gorm:"unique"`
 	Password     string
 	EmailAddress string `gorm:"uniqueIndex"`
+	FirstName    string
+	Surname      string
 }

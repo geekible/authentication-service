@@ -46,6 +46,7 @@ func (a *UserRoutes) Register() {
 
 		r.Post(fmt.Sprintf("%s/add-admin-user", a.baseEndpoint), a.addAdminUser)
 		r.Put(fmt.Sprintf("%s/update-password", a.baseEndpoint), a.updateUserPassword)
+		r.Put(fmt.Sprintf("%s/update-user", a.baseEndpoint), a.updateUser)
 		r.Delete(a.baseEndpoint, a.deleteUser)
 
 		r.Get(fmt.Sprintf("%s/get-by-username", a.baseEndpoint), a.getByUsername)
@@ -82,6 +83,21 @@ func (a *UserRoutes) addAdminUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	a.jsonHelpers.WriteJSON(w, http.StatusCreated, nil, nil)
+}
+
+func (a *UserRoutes) updateUser(w http.ResponseWriter, r *http.Request) {
+	var user dtos.UserDto
+	if err := a.jsonHelpers.ReadJSON(w, r, &user); err != nil {
+		a.jsonHelpers.ErrorJSON(w, err, http.StatusBadRequest, userErrSrc)
+		return
+	}
+
+	if err := a.userService.UpdateUserDetails(user); err != nil {
+		a.jsonHelpers.ErrorJSON(w, err, http.StatusInternalServerError, userErrSrc)
+		return
+	}
+
+	a.jsonHelpers.WriteJSON(w, http.StatusAccepted, nil, nil)
 }
 
 func (a *UserRoutes) updateUserPassword(w http.ResponseWriter, r *http.Request) {
