@@ -89,11 +89,6 @@ func buildLogger(f *os.File) *zap.SugaredLogger {
 }
 
 func buildDatbaseConnection(env, host, username, password, dbName string, port int) (*gorm.DB, error) {
-
-	if env == "dev" {
-		host = "localhost"
-	}
-
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable",
 		host,
 		username,

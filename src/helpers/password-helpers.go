@@ -40,10 +40,15 @@ func (h *PasswordHelper) ValidateComplexity() error {
 		}
 	}
 
-	if lowerCaseLetterCount < h.minLowerCaseCount ||
-		upperCaseLetterCount < h.minUpperCaseCount ||
-		symbolsCount < h.minSymbolsCount ||
-		len(h.password) < h.minCharCount {
+	if lowerCaseLetterCount < h.minLowerCaseCount {
+		return fmt.Errorf("password must be at least %d character long and contain a mixture of upper and lowercase letter and at least %d symbols",
+			h.minCharCount,
+			h.minSymbolsCount)
+	} else if upperCaseLetterCount < h.minUpperCaseCount {
+		return fmt.Errorf("password must be at least %d character long and contain a mixture of upper and lowercase letter and at least %d symbols",
+			h.minCharCount,
+			h.minSymbolsCount)
+	} else if len(h.password) < h.minCharCount {
 		return fmt.Errorf("password must be at least %d character long and contain a mixture of upper and lowercase letter and at least %d symbols",
 			h.minCharCount,
 			h.minSymbolsCount)

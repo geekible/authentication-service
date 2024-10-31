@@ -24,6 +24,7 @@ func InitUserService(serviceCfg *config.ServiceConfig) *UserService {
 		userRepo:      repositories.InitUserRepositoy(serviceCfg),
 		userClaimRepo: repositories.InitUserClaimRepository(serviceCfg),
 		emailService:  InitEmailService(),
+		logger:        serviceCfg.Logger,
 	}
 }
 
@@ -32,7 +33,7 @@ func (s *UserService) validateUser(user domain.User) error {
 		return errors.New("username must be supplied")
 	}
 
-	if s.emailService.ValidateEmail(user.EmailAddress) {
+	if !s.emailService.ValidateEmail(user.EmailAddress) {
 		return fmt.Errorf("the email address %s is not in a valid format", user.EmailAddress)
 	}
 

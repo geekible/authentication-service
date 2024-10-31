@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
@@ -72,7 +73,12 @@ func (a *UserRoutes) addAdminUser(w http.ResponseWriter, r *http.Request) {
 
 	user, err := a.userService.AddUser(user, true)
 	if err != nil {
-		a.jsonHelpers.ErrorJSON(w, err, http.StatusInternalServerError, userErrSrc)
+		if strings.Contains(err.Error(), "duplicate key value") {
+			a.jsonHelpers.ErrorJSON(w, errors.New("unable to create an account for this username"), http.StatusBadRequest, userErrSrc)
+		} else {
+			a.jsonHelpers.ErrorJSON(w, err, http.StatusInternalServerError, userErrSrc)
+		}
+
 		return
 	}
 
