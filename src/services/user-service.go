@@ -93,20 +93,31 @@ func (s *UserService) DeleteUser(user domain.User) error {
 	return nil
 }
 
-func (s *UserService) GetByUsernameAndPassword(username, password string) (dtos.UserLoginResponseDto, error) {
+func (s *UserService) ValidateLogin(username, password string) (dtos.UserLoginResponseDto, error) {
 	loginErrMsg := "username or password does not match"
 	if len(username) <= 0 || len(password) <= 0 {
 		s.logger.Warnf("invalid login attempt for user %s", username)
 		return dtos.UserLoginResponseDto{}, errors.New(loginErrMsg)
 	}
 
-	hashPwd, _ := helpers.InitCryptoHelper().Encrypt(password)
-
-	user, err := s.userRepo.GetByUsernameAndPassword(username, hashPwd)
+	user, err := s.userRepo.GetByUsername(username)
 	if err != nil {
 		s.logger.Warnf("invalid login attempt for user %s", username)
 		return dtos.UserLoginResponseDto{}, errors.New(loginErrMsg)
 	}
+
+	if user.FailedLoginAttempts > 3 {
+		s.logger.Warnf("user account for user %s is locked", username)
+		return dtos.UserLoginResponseDto{}, errors.New("user account locked")
+	}
+
+	if !helpers.InitCryptoHelper().IsHashMatched(user.Password, password) {
+		s.userRepo.IncrementFailedLoginAttempt(user.ID, user.FailedLoginAttempts+1)
+		s.logger.Warnf("invalid login attempt for user %s", username)
+		return dtos.UserLoginResponseDto{}, errors.New(loginErrMsg)
+	}
+
+	s.userRepo.ResetFailedLoginAttempt(user.ID)
 
 	resp := dtos.UserLoginResponseDto{
 		Username:     user.Username,

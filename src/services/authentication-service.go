@@ -31,7 +31,7 @@ func InitAuthenticationService(serviceConfig *config.ServiceConfig) *Authenticat
 }
 
 func (s *AuthenticationService) Login(username, password string) (jwt.Token, string, error) {
-	user, err := s.userRepo.GetByUsernameAndPassword(username, password)
+	user, err := s.userRepo.GetByUsername(username)
 	if err != nil {
 		return nil, "", err
 	}

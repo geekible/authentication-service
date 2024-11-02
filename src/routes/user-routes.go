@@ -122,7 +122,7 @@ func (a *UserRoutes) login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := a.userService.GetByUsernameAndPassword(loginDto.Username, loginDto.Password)
+	user, err := a.userService.ValidateLogin(loginDto.Username, loginDto.Password)
 	if err != nil {
 		a.jsonHelpers.ErrorJSON(w, errors.New("invalid login attempt"), http.StatusUnauthorized, userErrSrc)
 		return

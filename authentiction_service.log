@@ -1,3 +1,4 @@
-{"level":"error","ts":1730407672.525158,"msg":"error creating user: richard with error: ERROR: duplicate key value violates unique constraint \"uni_users_username\" (SQLSTATE 23505)"}
-{"level":"error","ts":1730407672.5255089,"msg":"error adding user richard with error ERROR: duplicate key value violates unique constraint \"uni_users_username\" (SQLSTATE 23505)"}
-{"level":"error","ts":1730407672.5255089,"msg":"error in UserRoutes: Err: unable to create an account for this username"}
+{"level":"warn","ts":1730556388.4154885,"msg":"invalid login attempt for user richard"}
+{"level":"error","ts":1730556388.4167304,"msg":"error in UserRoutes: Err: invalid login attempt"}
+{"level":"warn","ts":1730556408.5398314,"msg":"invalid login attempt for user richard"}
+{"level":"error","ts":1730556408.5403788,"msg":"error in UserRoutes: Err: invalid login attempt"}
